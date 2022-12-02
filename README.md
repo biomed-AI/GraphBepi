@@ -19,7 +19,7 @@ To run the full & accurate version of GraphBepi, you need to install the followi
 1. `git clone https://github.com/biomed-AI/GraphBepi.git && cd GraphBepi`
 2. `python dataset.py --gpu 0`
 
-It will take about half an hour to build our dataset with CUDA.
+It will take about 40 minutes to build our dataset from zero with CUDA.
 # Run GraphBepi for training
 After build our dataset ***BCE_633***, train the model with default hyper params:
 ```

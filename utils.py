@@ -97,7 +97,6 @@ class chain:
                     if amino_id==self.amino[idx]:
                         self.label[idx]=1
                         return
-            self.error[pos]=[amino,None]
         elif amino_id!=self.amino[idx]:
             for i in self.site.keys():
                 if i[:len(pos)]==pos:
@@ -105,7 +104,6 @@ class chain:
                     if amino_id==self.amino[idx]:
                         self.label[idx]=1
                         return
-            self.error[pos]=[amino,self.sequence[idx]]
         else:
             self.label[idx]=1
     def __len__(self):
@@ -123,19 +121,18 @@ def extract_chain(root,pid,chain,force=False):
         return True
     if not os.path.exists(f'{root}/PDB/{pid}.pdb'):
         retry=5
-        seq=None
+        pdb=None
         while retry>0:
             try:
                 with rq.get(f'https://files.rcsb.org/download/{pid}.pdb') as f:
-                    if f.status_code in [400,404]:
-                        print(f'PDB file {pid} failed to download')
-                    else:
+                    if f.status_code==200:
                         pdb=f.content
-                break
+                        break
             except:
                 retry-=1
                 continue
-        if seq is None:
+        if pdb is None:
+            print(f'PDB file {pid} failed to download')
             return False
         with open(f'{root}/PDB/{pid}.pdb','wb') as f:
             f.write(pdb)
@@ -196,7 +193,7 @@ def initial(file,root,model=None,device='cpu',from_native_pdb=True):
             for j in label:
                 site,amino,seq=j.split('_')
                 data.update(site,amino)
-            # data.get_adj(root)
+            data.get_adj(root)
             samples.append(data)
     with open(f'{root}/total.pkl','wb') as f:
         pk.dump(samples,f)
