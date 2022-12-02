@@ -155,7 +155,7 @@ def extract_chain(root,pid,chain,force=False):
 def initial(file,root,model=None,device='cpu',from_native_pdb=True):
     df=pd.read_csv(f'{root}/{file}',header=0,index_col=0)
     prefix=df.index
-    labels=df['Epitope List (residueid_residuename_chain)']
+    labels=df['Epitopes (resi_resn)']
     samples=[]
     with tqdm(prefix) as tbar:
         for i in tbar:
@@ -188,12 +188,12 @@ def initial(file,root,model=None,device='cpu',from_native_pdb=True):
             data.protein_name=p
             data.chain_name=c
             data.process()
-            data.extract(model,device,root)
             label=labels.loc[i].split(', ')
             for j in label:
-                site,amino,seq=j.split('_')
+                site,amino=j.split('_')
                 data.update(site,amino)
             data.get_adj(root)
+            data.extract(model,device,root)
             samples.append(data)
     with open(f'{root}/total.pkl','wb') as f:
         pk.dump(samples,f)
