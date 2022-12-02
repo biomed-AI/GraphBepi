@@ -122,11 +122,23 @@ def extract_chain(root,pid,chain,force=False):
     if not force and os.path.exists(f'{root}/purePDB/{pid}_{chain}.pdb'):
         return True
     if not os.path.exists(f'{root}/PDB/{pid}.pdb'):
-        os.system(f'wget https://files.rcsb.org/download/{pid}.pdb -q -P {root}/PDB')
-        if not os.path.exists(f'{root}/PDB/{pid}.pdb'):
-            # raise Exception(f'PDB file {pid} failed to download')
-            print(f'PDB file {pid} failed to download')
+        retry=5
+        seq=None
+        while retry>0:
+            try:
+                with rq.get(f'https://files.rcsb.org/download/{pid}.pdb') as f:
+                    if f.status_code in [400,404]:
+                        print(f'PDB file {pid} failed to download')
+                    else:
+                        pdb=f.content
+                break
+            except:
+                retry-=1
+                continue
+        if seq is None:
             return False
+        with open(f'{root}/PDB/{pid}.pdb','wb') as f:
+            f.write(pdb)
     lines=[]
     with open(f'{root}/PDB/{pid}.pdb','r') as f:
         for line in f:
