@@ -10,16 +10,16 @@ GraphBepi is developed under Linux environment with:
 - fair-esm  2.0.0
 - torch  1.12.1
 - pytorch-lightning  1.6.4
-
+- (optional) esmfold
 # Software requirement  
-To run the full & accurate version of GraphBepi, you need to install the following software in the [mkdssp](./mkdssp) directory:  
-[DSSP](https://github.com/cmbi/dssp) (Already in this repository) 
+To run the full & accurate version of GraphBepi, you need to make sure the following software is in the [mkdssp](./mkdssp) directory:  
+[DSSP](https://github.com/cmbi/dssp) (*dssp ver 2.0.4* is Already in this repository) 
 
 # Build dataset  
 1. `git clone https://github.com/biomed-AI/GraphBepi.git && cd GraphBepi`
 2. `python dataset.py --gpu 0`
 
-It will take about 40 minutes to build our dataset from zero with CUDA.
+It will take about 20 minutes to download the pretrained ESM-2 model and an hour to build our dataset with CUDA.
 # Run GraphBepi for training
 After build our dataset ***BCE_633***, train the model with default hyper params:
 ```
@@ -28,11 +28,11 @@ python train.py --dataset BCE_633
 # Run GraphBepi for prediction  
 For sequences in fasta file:  
 ```
-python test.py -i fasta_file -f
+python test.py -i fasta_file -f --gpu 0 -o ./output
 ```
 For a protein structure in PDB file:  
 ```
-python test.py -i pdb_file -p
+python test.py -i pdb_file -p --gpu 0 -o ./output
 ```
 
 # How to reproduce our work  

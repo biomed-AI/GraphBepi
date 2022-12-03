@@ -38,7 +38,7 @@ class PDB(Dataset):
         order.sort()
         tbar=tqdm(order)
         for i in tbar:
-            tbar.set_postfix(chain=f'{self.samples[i].get_name()}')
+            tbar.set_postfix(chain=f'{self.samples[i].name}')
             self.samples[i].load_feat(self.root)
             self.samples[i].load_dssp(self.root)
             self.samples[i].load_adj(self.root,self_cycle)
@@ -63,16 +63,16 @@ if __name__ == "__main__":
     root = args.root
     device='cpu' if args.gpu==-1 else f'cuda:{args.gpu}'
     
-    os.system(f'cd {root} && mkdir PDB purePDB feat dssp graph && cd ..')
+    os.system(f'cd {root} && mkdir PDB purePDB feat dssp graph')
+    # model=None
     model,_=esm.pretrained.esm2_t36_3B_UR50D()
     model=model.to(device)
     model.eval()
-    # model=None
     train='total.csv'
     initial(train,root,model,device)
     with open(f'{root}/total.pkl','rb') as f:
         dataset=pk.load(f)
-    dates={i.get_name():i.date for i in dataset}
+    dates={i.name:i.date for i in dataset}
     filt_data=[]
     for i in dataset:
         if len(i)<1024 and i.label.sum()>0:
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     D,M,Y=[],[],[]
     test=20210401
     dates_=[]
-    for i in tqdm(filt_data):
+    for i in filt_data:
         d,m,y=i.date.split('-')
         d,m,y=int(d),month[m],int(y)
         if y<23:

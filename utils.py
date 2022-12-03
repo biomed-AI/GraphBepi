@@ -37,8 +37,9 @@ class chain:
         self.edge=None
         self.feat=None
         self.dssp=None
-        self.chain_name=None
-        self.protein_name=None
+        self.name=''
+        self.chain_name=''
+        self.protein_name=''
     def add(self,amino,pos,coord):
         self.sequence.append(DICT[amino])
         self.amino.append(amino2id[DICT[amino]])
@@ -56,10 +57,10 @@ class chain:
         f=lambda x:model(x.to(device).unsqueeze(0),[36])['representations'][36].squeeze(0).cpu()
         with torch.no_grad():
             feat=f(self.amino)
-        torch.save(feat,f'{path}/feat/{self.get_name()}_esm2.ts')
+        torch.save(feat,f'{path}/feat/{self.name}_esm2.ts')
     def load_dssp(self,path):
-        dssp=torch.Tensor(np.load(f'{path}/dssp/{self.get_name()}.npy'))
-        pos=np.load(f'{path}/dssp/{self.get_name()}_pos.npy')
+        dssp=torch.Tensor(np.load(f'{path}/dssp/{self.name}.npy'))
+        pos=np.load(f'{path}/dssp/{self.name}_pos.npy')
         self.dssp=torch.Tensor([
             -2.4492936e-16, -2.4492936e-16,
             1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -71,9 +72,9 @@ class chain:
                 self.rsa[i]=1
         self.rsa=self.rsa.bool()
     def load_feat(self,path):
-        self.feat=torch.load(f'{path}/feat/{self.get_name()}_esm2.ts')
+        self.feat=torch.load(f'{path}/feat/{self.name}_esm2.ts')
     def load_adj(self,path,self_cycle=False):
-        graph=torch.load(f'{path}/graph/{self.get_name()}.graph')
+        graph=torch.load(f'{path}/graph/{self.name}.graph')
         self.adj=graph['adj'].to_dense()
         self.edge=graph['edge'].to_dense()
         if not self_cycle:
@@ -81,9 +82,7 @@ class chain:
             self.edge[range(len(self)),range(len(self))]=0
     def get_adj(self,path,dseq=3,dr=10,dlong=5,k=10):
         graph=calcPROgraph(self.sequence,self.coord,dseq,dr,dlong,k)
-        torch.save(graph,f'{path}/graph/{self.get_name()}.graph')
-    def get_name(self):
-        return f'{self.protein_name}_{self.chain_name}'
+        torch.save(graph,f'{path}/graph/{self.name}.graph')
     def update(self,pos,amino):
         if amino not in DICT.keys():
             return
@@ -151,7 +150,30 @@ def extract_chain(root,pid,chain,force=False):
         for i in lines:
             f.write(i)
     return True
-
+def process_chain(data,root,pid,model,device):
+    get_dssp(pid,root)
+    same={}
+    with open(f'{root}/purePDB/{pid}.pdb','r') as f:
+        for line in f:
+            if line[:6]=='HEADER':
+                date=line[50:59].strip()
+                data.date=date
+                continue
+            feats=judge(line,'CA')
+            if feats is None:
+                continue
+            amino,_,site,x,y,z=feats
+            if len(amino)>3:
+                if same.get(site) is None:
+                    same[site]=amino[0]
+                if same[site]!=amino[0]:
+                    continue
+                amino=amino[-3:]
+            data.add(amino,site,[x,y,z])
+    data.process()
+    data.get_adj(root)
+    data.extract(model,device,root)
+    return data
 def initial(file,root,model=None,device='cpu',from_native_pdb=True):
     df=pd.read_csv(f'{root}/{file}',header=0,index_col=0)
     prefix=df.index
@@ -164,36 +186,16 @@ def initial(file,root,model=None,device='cpu',from_native_pdb=True):
                 state=extract_chain(root,i[:4],i[-1])
                 if not state:
                     continue
-            get_dssp(i,root)
             data=chain()
-            same={}
-            with open(f'{root}/purePDB/{i}.pdb','r') as f:
-                for line in f:
-                    if line[:6]=='HEADER':
-                        date=line[50:59].strip()
-                        data.date=date
-                        continue
-                    feats=judge(line,'CA')
-                    if feats is None:
-                        continue
-                    amino,_,site,x,y,z=feats
-                    if len(amino)>3:
-                        if same.get(site) is None:
-                            same[site]=amino[0]
-                        if same[site]!=amino[0]:
-                            continue
-                        amino=amino[-3:]
-                    data.add(amino,site,[x,y,z])
             p,c=i.split('_')
             data.protein_name=p
             data.chain_name=c
-            data.process()
+            data.name=f"{p}_{c}"
+            process_chain(data,root,i,model,device)
             label=labels.loc[i].split(', ')
             for j in label:
                 site,amino=j.split('_')
                 data.update(site,amino)
-            data.get_adj(root)
-            data.extract(model,device,root)
             samples.append(data)
     with open(f'{root}/total.pkl','wb') as f:
         pk.dump(samples,f)

@@ -114,13 +114,13 @@ class GraphBepi(pl.LightningModule):
         pred=torch.cat(pred,0)
         y=torch.cat(y,0)
         loss=self.loss_fn(pred,y.float())
-        self.log('test_loss', loss.cpu().item(), on_epoch=True, prog_bar=True, logger=True)
         if self.path:
             if not os.path.exists(self.path):
                 os.system(f'mkdir -p {self.path}')
             torch.save({'pred':pred.cpu(),'gt':y.cpu()},f'{self.path}/result.pkl')
         if self.metrics is not None:
             result=self.metrics(pred.detach().clone(),y.detach().clone())
+            self.log('test_loss', loss.cpu().item(), on_epoch=True, prog_bar=True, logger=True)
             self.log('test_AUROC', result['AUROC'], on_epoch=True, prog_bar=True, logger=True)
             self.log('test_AUPRC', result['AUPRC'], on_epoch=True, prog_bar=True, logger=True)
             self.log('test_recall', result['RECALL'], on_epoch=True, prog_bar=True, logger=True)
