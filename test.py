@@ -127,6 +127,7 @@ for i in range(len(testset)):
     labeli=torch.where(predi>args.threshold,1,0).bool()
     df=pd.DataFrame({'resn':list(seqi),'score':predi,'is epitope':labeli})
     df.to_csv(f'{args.output}/{testset.data[i].name}.csv',index=False)
+os.remove(f'{args.output}/result.pkl')
 print('Fin')
 
         
