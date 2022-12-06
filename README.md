@@ -33,13 +33,20 @@ After build our dataset ***BCE_633***, train the model with default hyper params
 python train.py --dataset BCE_633
 ```
 # Run GraphBepi for prediction  
-For sequences in fasta file:  
-```
-python test.py -i fasta_file -f --gpu 0 -o ./output
-```
-For a protein structure in PDB file:  
+
+1) Please execute the following command directly if you can provide the PDB file.
+2) If you do not have a PDB file, you can use [AlphaFold2](http://bio-web1.nscc-gz.cn/app/alphaFold2_bio) to predict the protein structure. 
+
 ```
 python test.py -i pdb_file -p --gpu 0 -o ./output
+```
+
+or
+
+We have also deployed a faster structural prediction model [ESMFold](https://github.com/facebookresearch/esm) in our project, so you can process the sequences directly by following the commands below.
+
+```
+python test.py -i fasta_file -f --gpu 0 -o ./output
 ```
 
 
