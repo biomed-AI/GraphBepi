@@ -2,7 +2,7 @@
 GraphBepi is a novel graph-based method for accurate B-cell epitope prediction, which is able to capture
 spatial information using the predicted protein structures through the edge-enhanced deep graph neural network.
 
-We recommend you to use the [web server](http://bio-web1.nscc-gz.cn/apps) of GraphBepi
+We recommend you to use the [web server](http://bio-web1.nscc-gz.cn/app/graphbepi) of GraphBepi
 if your input is small.  
 
 
