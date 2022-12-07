@@ -51,7 +51,7 @@ python test.py -i fasta_file -f --gpu 0 -o ./output
 
 
 # Web server, citation and contact  
-The GraphPPIS web server is freely available:  [interface](http://bio-web1.nscc-gz.cn/apps)  
+The GrpahBepi web server is freely available:  [interface](http://bio-web1.nscc-gz.cn/app/graphbepi)  
 
 Citation:  
 ```
