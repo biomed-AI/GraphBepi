@@ -111,7 +111,7 @@ model=GraphBepi(
     result_path=f'{args.output}',      # path to save temporary result file of testset
 )
 model.load_state_dict(
-    torch.load(f'./model/BCE_633_GraphBepi/model_-1.ckpt')['state_dict'],
+    torch.load(f'./model/BCE_633_GraphBepi/model_-1.ckpt',map_location='cpu')['state_dict'],
 )
 trainer = pl.Trainer(gpus=[args.gpu],logger=None)
 result = trainer.test(model,test_loader)
