@@ -19,6 +19,7 @@ class GraphBepi(pl.LightningModule):
         # loss function
         self.loss_fn=nn.BCELoss()
         # Hyperparameters
+        self.exfeat_dim=exfeat_dim
         self.augment_eps = augment_eps
         self.lr = lr
         self.cls = 1
@@ -53,7 +54,7 @@ class GraphBepi(pl.LightningModule):
             aug[~mask]=0
             V = V+self.augment_eps * aug
         mask=mask.sum(1)
-        feats,dssps=self.W_v(V[:,:,:-13]),self.W_u1(V[:,:,-13:])
+        feats,dssps=self.W_v(V[:,:,:-self.exfeat_dim]),self.W_u1(V[:,:,-self.exfeat_dim:])
         x_gcns=[]
         for i in range(len(V)):
             E=self.edge_linear(edge[i]).permute(2,0,1)
