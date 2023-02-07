@@ -28,7 +28,7 @@ To run the full & accurate version of GraphBepi, you need to make sure the follo
 
 It will take about 20 minutes to download the pretrained ESM-2 model and an hour to build our dataset with CUDA.
 # Run GraphBepi for training
-After build our dataset ***BCE_633***, train the model with default hyper params:
+After building our dataset ***BCE_633***, train the model with default hyper params:
 ```
 python train.py --dataset BCE_633
 ```
