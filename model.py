@@ -54,19 +54,19 @@ class GraphBepi(pl.LightningModule):
             aug[~mask]=0
             V = V+self.augment_eps * aug
         mask=mask.sum(1)
-        feats,dssps=self.W_v(V[:,:,:-self.exfeat_dim]),self.W_u1(V[:,:,-self.exfeat_dim:])
+        feats,exfeats=self.W_v(V[:,:,:-self.exfeat_dim]),self.W_u1(V[:,:,-self.exfeat_dim:])
         x_gcns=[]
         for i in range(len(V)):
             E=self.edge_linear(edge[i]).permute(2,0,1)
-            x1,x2=feats[i,:mask[i]],dssps[i,:mask[i]]
+            x1,x2=feats[i,:mask[i]],exfeats[i,:mask[i]]
             x_gcn=torch.cat([x1,x2],-1)
             x_gcn,E=self.gat(x_gcn,E)
             x_gcns.append(x_gcn)
         feats=pack_padded_sequence(feats,mask.cpu(),True,False)
-        dssps=pack_padded_sequence(dssps,mask.cpu(),True,False)
+        exfeats=pack_padded_sequence(exfeats,mask.cpu(),True,False)
         feats=pad_packed_sequence(self.lstm1(feats)[0],True)[0]
-        dssps=pad_packed_sequence(self.lstm2(dssps)[0],True)[0]
-        x_attns=torch.cat([feats,dssps],-1)
+        exfeats=pad_packed_sequence(self.lstm2(exfeats)[0],True)[0]
+        x_attns=torch.cat([feats,exfeats],-1)
         
         x_attns=[x_attns[i,:mask[i]] for i in range(len(x_attns))]
         h=[torch.cat([x_attn,x_gcn],-1) for x_attn,x_gcn in zip(x_attns,x_gcns)]
