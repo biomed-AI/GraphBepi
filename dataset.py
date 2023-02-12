@@ -73,6 +73,8 @@ if __name__ == "__main__":
     with open(f'{root}/total.pkl','rb') as f:
         dataset=pk.load(f)
     dates={i.name:i.date for i in dataset}
+#     with open(f'{root}/date.pkl','rb') as f:
+#         dates=pk.load(f)
     filt_data=[]
     for i in dataset:
         if len(i)<1024 and i.label.sum()>0:
@@ -83,7 +85,7 @@ if __name__ == "__main__":
     test=20210401
     dates_=[]
     for i in filt_data:
-        d,m,y=i.date.split('-')
+        d,m,y=dates[i.name]
         d,m,y=int(d),month[m],int(y)
         if y<23:
             y+=2000
